@@ -1,0 +1,22 @@
+# Qt Creator / CMake
+build-*/
+*.user
+*.user.*.pro.user
+*.pro.user
+*.qbs.user
+*.moc
+*.rcc
+*.ui.h
+Makefile
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+*.o
+*.obj
+*.exe
+*.out
+*.log
+
+# macOS
+.DS_Store
+
