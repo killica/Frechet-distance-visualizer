@@ -19,11 +19,31 @@ void PolylineCanvas::paintEvent(QPaintEvent*) {
 
     painter.fillRect(rect(), Qt::white);
 
+    painter.save();
+    int W = width();
+    int H = height();
+
+    double scaleX = 1.0;
+    double scaleY = 1.0;
+
+    double offsetX = 30; // left margin
+    double offsetY = H - 50; // bottom margin
+
+    auto transformPoint = [&](const QPointF& pt) -> QPointF {
+        double x = pt.x() * scaleX + offsetX;
+        double y = offsetY - pt.y() * scaleY; // invert y
+        return QPointF(x, y);
+    };
+
     painter.setPen(QPen(Qt::blue, 2));
     for (int i = 0; i + 1 < P.size(); ++i)
-        painter.drawLine(P.vertices[i], P.vertices[i + 1]);
+        painter.drawLine(transformPoint(P.vertices[i]),
+                         transformPoint(P.vertices[i + 1]));
 
     painter.setPen(QPen(Qt::red, 2));
     for (int i = 0; i + 1 < Q.size(); ++i)
-        painter.drawLine(Q.vertices[i], Q.vertices[i + 1]);
+        painter.drawLine(transformPoint(Q.vertices[i]),
+                         transformPoint(Q.vertices[i + 1]));
+
+    painter.restore();
 }
