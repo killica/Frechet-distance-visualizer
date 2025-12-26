@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
-#include "canvas.h"
+#include "canvas/polylinecanvas.h"
 #include <QVBoxLayout>
 #include "geometry/freespace.h"
 #include "geometry/reachability.h"
@@ -14,26 +14,30 @@ MainWindow::MainWindow(QWidget *parent)
     QWidget* central = new QWidget(this);
     setCentralWidget(central);
 
-    canvas = new Canvas(this);
+    // Horizontalni layout: levo polilinije, desno free space
+    auto* layout = new QHBoxLayout(central);
 
-    auto* layout = new QVBoxLayout(central);
-    layout->addWidget(canvas);
+    polylineCanvas = new PolylineCanvas(this);
+    layout->addWidget(polylineCanvas, 1);
+
+    freeSpaceCanvas = new FreeSpaceCanvas(this);
+    layout->addWidget(freeSpaceCanvas, 1);
 
     // Primer polilinija
     Polyline P;
-    P.vertices = { QPointF(0,0), QPointF(2,0), QPointF(4,0) };
+    P.vertices = { QPointF(0,0), QPointF(200,0), QPointF(400,0) };
     Polyline Q;
-    Q.vertices = { QPointF(1,1), QPointF(3,1), QPointF(5,1) };
+    Q.vertices = { QPointF(100,100), QPointF(300,100), QPointF(500,100) };
 
-    double eps = 2.0;
+    double eps = 200.0;
 
-    FreeSpace fs(P, Q, eps);
-    Frechet::Reachability reach(fs);
+    freeSpace = std::make_unique<FreeSpace>(P, Q, eps);
+    Frechet::Reachability reach(*freeSpace);
     reach.compute();
 
     // debug ispis
     qDebug() << "------REACHABLE------";
-    auto& cells = fs.getCells();
+    auto& cells = freeSpace->getCells();
     for (int i = 0; i < 2; ++i) {
         for (int j = 0; j < 2; ++j) {
             const auto& c = cells[i][j];
@@ -57,7 +61,11 @@ MainWindow::MainWindow(QWidget *parent)
         }
     }
 
-    canvas->setPolylines(P, Q);
+    polylineCanvas->setPolylines(P, Q);
+    freeSpaceCanvas->setFreeSpace(freeSpace.get());
+
+    setWindowTitle("Frechet Distance Visualizer");
+    resize(1100, 600);
 }
 
 MainWindow::~MainWindow()

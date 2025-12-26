@@ -6,10 +6,16 @@
 class FreeSpace {
 public:
     FreeSpace(const Polyline& P, const Polyline& Q, double epsilon);
-    inline int getM() {return cells.size();}
-    inline int getN() {return cells[0].size();}
+    inline int getM() const {return cells.size();}
+    inline int getN() const {return cells[0].size();}
 
-    std::vector<std::vector<FrechetCell>>& getCells() { return cells; }
+    const std::vector<std::vector<FrechetCell>>& getCells() const {
+        return cells;
+    }
+
+    std::vector<std::vector<FrechetCell>>& getCells() {
+        return cells;
+    }
 
 private:
     const Polyline& P;

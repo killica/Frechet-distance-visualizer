@@ -1,14 +1,14 @@
-#ifndef CANVAS_H
-#define CANVAS_H
+#ifndef POLYLINECANVAS_H
+#define POLYLINECANVAS_H
 
 #include <QWidget>
-#include "geometry/Polyline.h"
+#include "../geometry/Polyline.h"
 
-class Canvas : public QWidget
+class PolylineCanvas : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Canvas(QWidget *parent = nullptr);
+    explicit PolylineCanvas(QWidget *parent = nullptr);
     void setPolylines(const Polyline& p, const Polyline& q);
 
 protected:
@@ -21,4 +21,5 @@ private:
 signals:
 };
 
-#endif // CANVAS_H
+#endif // POLYLINECANVAS_H
+

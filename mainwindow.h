@@ -1,7 +1,10 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "canvas/polylinecanvas.h"
+#include "canvas/freespacecanvas.h"
 #include <QMainWindow>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -21,6 +24,9 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    Canvas* canvas;
+    PolylineCanvas* polylineCanvas;
+    FreeSpaceCanvas* freeSpaceCanvas;
+    std::unique_ptr<FreeSpace> freeSpace;
+
 };
 #endif // MAINWINDOW_H
