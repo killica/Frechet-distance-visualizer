@@ -57,6 +57,17 @@ static void drawVerticalInterval(
     p.drawLine(x, y1, x, y2);
 }
 
+QString FreeSpaceCanvas::subscriptNumber(int n) {
+    QString result;
+    while (n > 0) {
+        int digit = n % 10;
+        result.prepend(QChar(0x2080 + digit)); // Unicode subscript
+        n /= 10;
+    }
+    if (result.isEmpty()) result = QChar(0x2080); // za 0
+    return result;
+}
+
 void FreeSpaceCanvas::paintEvent(QPaintEvent*)
 {
     QPainter p(this);
@@ -141,6 +152,29 @@ void FreeSpaceCanvas::paintEvent(QPaintEvent*)
         }
     }
 
+    // --- crtanje naziva segmenata P ispod svake kolone ---
+    p.setPen(Qt::white);
+    QFont font = p.font();
+    font.setPointSizeF(15.0); // fiksna veličina fonta u pikselima
+    p.setFont(font);
+
+    // imena P segmenata
+    for (int i = 0; i < m; ++i) {
+        QString name = QString("P%1P%2").arg(subscriptNumber(i)).arg(subscriptNumber(i+1));
+        int x = i * s + s/2;       // sredina ćelije horizontalno
+        int y = gridHeight + 30;   // ispod donjih ivica
+        p.drawText(x - 10, y, name); // -10 da centriramo malo tekst
+    }
+
+    // imena Q segmenata
+    for (int j = 0; j < n; ++j) {
+        QString name = QString("Q%1Q%2").arg(subscriptNumber(j)).arg(subscriptNumber(j+1));
+        int x = -50;               // levo od najlevlje kolone
+        int y = gridHeight - (j * s + s/2); // sredina ćelije vertikalno
+        p.drawText(x, y + 5, name); // +5 da centriramo vertikalno
+    }
 
     p.restore();
 }
+
+

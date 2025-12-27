@@ -1,4 +1,5 @@
 #include "polylinecanvas.h"
+#include "freespacecanvas.h"
 #include <QPainter>
 
 PolylineCanvas::PolylineCanvas(QWidget *parent)
@@ -66,13 +67,13 @@ void PolylineCanvas::paintEvent(QPaintEvent*)
 
     for (size_t i = 0; i < P.vertices.size(); ++i) {
         QPointF pt = transformPoint(P.vertices[i]);
-        painter.drawText(pt + QPointF(5, -5), QString("P%1").arg(i));
+        painter.drawText(pt + QPointF(5, -5), QString("P%1").arg(FreeSpaceCanvas::subscriptNumber(i)));
     }
 
     painter.setPen(QPen(Qt::red, 2));
     for (size_t i = 0; i < Q.vertices.size(); ++i) {
         QPointF pt = transformPoint(Q.vertices[i]);
-        painter.drawText(pt + QPointF(5, -5), QString("Q%1").arg(i));
+        painter.drawText(pt + QPointF(5, -5), QString("Q%1").arg(FreeSpaceCanvas::subscriptNumber(i)));
     }
 }
 

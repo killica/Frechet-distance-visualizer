@@ -13,6 +13,7 @@ public:
     void setFreeSpace(FreeSpace* fs);
 
     void updateCellSize();
+    static QString subscriptNumber(int n);
 protected:
     void paintEvent(QPaintEvent* event) override;
 
