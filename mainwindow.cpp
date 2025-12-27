@@ -152,6 +152,7 @@ void MainWindow::onEpsChanged(int value)
 void MainWindow::onPolylinesLoaded(const Polyline& P, const Polyline& Q)
 {
     polylineCanvas->setPolylines(P, Q);
+    adjustEpsSliderRange();
 
     freeSpace.reset();
 
@@ -162,7 +163,17 @@ void MainWindow::onPolylinesLoaded(const Polyline& P, const Polyline& Q)
 
     criticalEpsLabel->setText("Critical ε = ?");
     criticalEpsLabel->setStyleSheet("");
-    epsSlider->setValue(0);
     restartAnimButton->setEnabled(false);
 }
+
+void MainWindow::adjustEpsSliderRange() {
+    if (!polylineCanvas) return;
+
+    auto bb = polylineCanvas->getBoundingBox();
+    double maxRange = std::max(bb.maxX - bb.minX, bb.maxY - bb.minY);
+    epsSlider->setMinimum(0);
+    epsSlider->setMaximum(static_cast<int>(std::ceil(maxRange)) + 1);
+    epsSlider->setValue(0);
+}
+
 

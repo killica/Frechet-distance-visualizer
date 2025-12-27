@@ -25,6 +25,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void adjustEpsSliderRange();
 private:
     Ui::MainWindow *ui;
     PolylineCanvas* polylineCanvas;

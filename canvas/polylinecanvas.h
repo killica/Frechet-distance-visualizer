@@ -8,6 +8,12 @@ class PolylineCanvas : public QWidget
 {
     Q_OBJECT
 public:
+
+    struct BoundingBox {
+        double minX, maxX;
+        double minY, maxY;
+    };
+
     explicit PolylineCanvas(QWidget *parent = nullptr);
     void setPolylines(const Polyline& p, const Polyline& q);
     void updateTransform();
@@ -16,6 +22,8 @@ public:
     void startAnimation();
     void updateAnimation();
     void generateAnimationPositions(const std::vector<QPointF>& criticalPath);
+    BoundingBox getBoundingBox() const { return bbox_;};
+
 
     Point pointOnPolyline(const Polyline &poly, double param);
 protected:
@@ -28,11 +36,6 @@ private:
     double scale_ = 1.0;
     double offsetX_ = 0.0;
     double offsetY_ = 0.0;
-
-    struct BoundingBox {
-        double minX, maxX;
-        double minY, maxY;
-    };
 
     BoundingBox bbox_;
     BoundingBox computeBoundingBox() const;
