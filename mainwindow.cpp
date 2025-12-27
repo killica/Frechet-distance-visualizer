@@ -1,7 +1,13 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
-#include "canvas/polylinecanvas.h"
+
+#include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QSlider>
+#include <QLabel>
+
+#include "canvas/polylinecanvas.h"
+#include "canvas/freespacecanvas.h"
 #include "geometry/freespace.h"
 #include "geometry/reachability.h"
 
@@ -11,46 +17,79 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    // --- Central widget ---
     QWidget* central = new QWidget(this);
     setCentralWidget(central);
 
     auto* mainLayout = new QHBoxLayout(central);
 
-    // --- Left canvas for polylines ---
-    polylineCanvas = new PolylineCanvas(this);
-    mainLayout->addWidget(polylineCanvas, 1);
+    // Left side: title + polyline canvas
+    auto* leftLayout = new QVBoxLayout();
 
-    // --- Right layout for free space and slider ---
+    auto* polylineTitle = new QLabel("Polylines P and Q");
+    polylineTitle->setAlignment(Qt::AlignCenter);
+    polylineTitle->setStyleSheet("font-weight: bold; font-size: 14px;");
+
+    polylineCanvas = new PolylineCanvas(this);
+
+    leftLayout->addWidget(polylineTitle);
+    leftLayout->addWidget(polylineCanvas, 1);
+
+    mainLayout->addLayout(leftLayout, 1);
+
+    // Right side: free space canvas + slider
     auto* rightLayout = new QVBoxLayout();
+
+    auto* freeSpaceTitle = new QLabel("Free Space Diagram");
+    freeSpaceTitle->setAlignment(Qt::AlignCenter);
+    freeSpaceTitle->setStyleSheet("font-weight: bold; font-size: 14px;");
+
     freeSpaceCanvas = new FreeSpaceCanvas(this);
+
+    rightLayout->addWidget(freeSpaceTitle);
     rightLayout->addWidget(freeSpaceCanvas, 1);
 
     epsSlider = new QSlider(Qt::Horizontal);
     epsSlider->setMinimum(1);
     epsSlider->setMaximum(100);
-    epsSlider->setValue(69);
+    epsSlider->setValue(1);
+
     epsLabel = new QLabel(QString("Eps = %1").arg(epsSlider->value()));
+    epsLabel->setAlignment(Qt::AlignCenter);
 
     rightLayout->addWidget(epsLabel);
     rightLayout->addWidget(epsSlider);
 
     mainLayout->addLayout(rightLayout, 1);
 
-    // --- Polylines ---
+    // Polylines
     Polyline P;
-    P.vertices = { QPointF(0,0), QPointF(40,0), QPointF(80,30), QPointF(120,60) };
+    P.vertices = {
+        QPointF(0, 0),
+        QPointF(40, 0),
+        QPointF(80, 30),
+        QPointF(120, 60)
+    };
+
     Polyline Q;
-    Q.vertices = { QPointF(0,50), QPointF(30,80), QPointF(70,20), QPointF(110,50) };
+    Q.vertices = {
+        QPointF(0, 50),
+        QPointF(30, 80),
+        QPointF(70, 20),
+        QPointF(110, 50)
+    };
 
     freeSpace = std::make_unique<FreeSpace>(P, Q, epsSlider->value());
+
     Frechet::Reachability reach(*freeSpace);
     reach.compute();
 
     polylineCanvas->setPolylines(P, Q);
     freeSpaceCanvas->setFreeSpace(freeSpace.get());
 
-    // --- Signal and slot ---
-    connect(epsSlider, &QSlider::valueChanged, this, &MainWindow::onEpsChanged);
+    // Signals & slots
+    connect(epsSlider, &QSlider::valueChanged,
+            this, &MainWindow::onEpsChanged);
 
     setWindowTitle("Frechet Distance Visualizer");
     resize(1100, 600);
@@ -61,14 +100,15 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-// --- Slot ---
+// Slot
 void MainWindow::onEpsChanged(int value)
 {
     epsLabel->setText(QString("Eps = %1").arg(value));
 
-    if (!freeSpace) return;
+    if (!freeSpace)
+        return;
 
-    // Update eps + recalculate reachability
+    // Update eps and recompute reachability
     freeSpace->setEps(value);
     freeSpace->computeReachability();
     freeSpaceCanvas->update();

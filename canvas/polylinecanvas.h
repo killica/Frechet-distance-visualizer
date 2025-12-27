@@ -10,6 +10,7 @@ class PolylineCanvas : public QWidget
 public:
     explicit PolylineCanvas(QWidget *parent = nullptr);
     void setPolylines(const Polyline& p, const Polyline& q);
+    void updateTransform();
 
 protected:
     void paintEvent(QPaintEvent *) override;
@@ -17,6 +18,17 @@ protected:
 private:
     Polyline P;
     Polyline Q;
+
+    double scale_ = 1.0;
+    double offsetX_ = 0.0;
+    double offsetY_ = 0.0;
+
+    struct BoundingBox {
+        double minX, maxX;
+        double minY, maxY;
+    };
+
+    BoundingBox computeBoundingBox();
 
 signals:
 };
