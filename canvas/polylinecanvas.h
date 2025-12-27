@@ -49,6 +49,8 @@ private:
     bool animationRunning = false;
     QTimer* animTimer = nullptr;
 
+public slots:
+    void restartAnimation();
 
 signals:
 };

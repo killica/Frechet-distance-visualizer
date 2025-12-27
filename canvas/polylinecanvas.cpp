@@ -11,14 +11,15 @@ PolylineCanvas::PolylineCanvas(QWidget *parent)
     dogPixmap = QPixmap(":/images/doggo.png");
     humanPixmap = QPixmap(":/images/human.png");
 
-    double pixScale = 0.12 * width() / dogPixmap.width();
-    dogPixmapScaled = dogPixmap.scaled(dogPixmap.width()*pixScale,
-                                       dogPixmap.height()*pixScale,
+    double dogPixScale = 0.12 * width() / dogPixmap.width();
+    dogPixmapScaled = dogPixmap.scaled(dogPixmap.width()*dogPixScale,
+                                       dogPixmap.height()*dogPixScale,
                                        Qt::KeepAspectRatio,
                                        Qt::SmoothTransformation);
 
-    humanPixmapScaled = humanPixmap.scaled(humanPixmap.width()*pixScale,
-                                           humanPixmap.height()*pixScale,
+    double humanPixScale = 0.06 * width() / humanPixmap.width();
+    humanPixmapScaled = humanPixmap.scaled(humanPixmap.width()*humanPixScale,
+                                           humanPixmap.height()*humanPixScale,
                                            Qt::KeepAspectRatio,
                                            Qt::SmoothTransformation);
 
@@ -228,4 +229,12 @@ PolylineCanvas::BoundingBox PolylineCanvas::computeBoundingBox() const
     for (const auto& q : Q.vertices) update(q);
 
     return bb;
+}
+
+void PolylineCanvas::restartAnimation()
+{
+    // if (criticalPath.empty()) return;
+
+    animIndex = 0;
+    animTimer->start();
 }

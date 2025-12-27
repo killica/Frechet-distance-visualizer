@@ -5,6 +5,7 @@
 #include <QVBoxLayout>
 #include <QSlider>
 #include <QLabel>
+#include <QPushButton>
 
 #include "canvas/polylinecanvas.h"
 #include "canvas/freespacecanvas.h"
@@ -32,8 +33,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     polylineCanvas = new PolylineCanvas(this);
 
+    restartAnimButton = new QPushButton("Restart animation");
+    restartAnimButton->setEnabled(false);
+    connect(restartAnimButton, &QPushButton::clicked, polylineCanvas, &PolylineCanvas::restartAnimation);
+
     leftLayout->addWidget(polylineTitle);
     leftLayout->addWidget(polylineCanvas, 1);
+    leftLayout->addWidget(restartAnimButton, 1);
 
     mainLayout->addLayout(leftLayout, 1);
 
@@ -55,9 +61,17 @@ MainWindow::MainWindow(QWidget *parent)
     epsSlider->setValue(1);
 
     epsLabel = new QLabel(QString("Eps = %1").arg(epsSlider->value()));
-    epsLabel->setAlignment(Qt::AlignCenter);
+    epsLabel->setAlignment(Qt::AlignLeft);
 
-    rightLayout->addWidget(epsLabel);
+    criticalEpsLabel = new QLabel(QString("Critical eps = ?"));
+    criticalEpsLabel->setAlignment(Qt::AlignRight);
+
+    auto* epsLayout = new QHBoxLayout();
+    epsLayout->addWidget(epsLabel);
+    epsLayout->addWidget(criticalEpsLabel);
+
+
+    rightLayout->addLayout(epsLayout);
     rightLayout->addWidget(epsSlider);
 
     mainLayout->addLayout(rightLayout, 1);
@@ -120,7 +134,13 @@ void MainWindow::onEpsChanged(int value)
 
         polylineCanvas->generateAnimationPositions(freeSpace->criticalPath);
         polylineCanvas->startAnimation();
-
+        restartAnimButton->setEnabled(true);
+        criticalEpsLabel->setText(QString("Critical eps ≈ %1").arg(value));
+        criticalEpsLabel->setStyleSheet(
+            "color: red;"
+            "font-size: 17px;"
+            "font-weight: bold;"
+            );
     }
 
     if (freeSpace->criticalPath.empty()) {

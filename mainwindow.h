@@ -6,6 +6,7 @@
 #include <QMainWindow>
 #include <QSlider>
 #include <QLabel>
+#include <QPushButton>
 #include <memory>
 
 QT_BEGIN_NAMESPACE
@@ -31,6 +32,8 @@ private:
     std::unique_ptr<FreeSpace> freeSpace;
     QSlider* epsSlider;
     QLabel* epsLabel;
+    QLabel* criticalEpsLabel;
+    QPushButton* restartAnimButton;
 
 private slots:
     void onEpsChanged(int value);
