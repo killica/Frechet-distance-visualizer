@@ -7,9 +7,27 @@ FreeSpaceCanvas::FreeSpaceCanvas(QWidget* parent)
     setMinimumSize(400, 400);
 }
 
-void FreeSpaceCanvas::setFreeSpace(const FreeSpace* fs)
+void FreeSpaceCanvas::updateCellSize()
+{
+    if (!fs_)
+        return;
+
+    int m = fs_->getM();
+    int n = fs_->getN();
+    int margin = 20;
+
+    if (m > 0 && n > 0)
+        cellSize_ = std::min(
+            (width()  - 2 * margin) / m,
+            (height() - 2 * margin) / n
+            );
+}
+
+
+void FreeSpaceCanvas::setFreeSpace(FreeSpace* fs)
 {
     fs_ = fs;
+    updateCellSize();
     update();
 }
 
@@ -47,104 +65,70 @@ void FreeSpaceCanvas::paintEvent(QPaintEvent*)
     if (!fs_)
         return;
 
-    int m = fs_->getM();
-    int n = fs_->getN();
+    int m = fs_->getM(); // broj segmenata P (horizontalno)
+    int n = fs_->getN(); // broj segmenata Q (vertikalno)
     int s = cellSize_;
 
-    int gridWidth  = n * s;
-    int gridHeight = m * s;
+    int gridWidth  = m * s;
+    int gridHeight = n * s;
 
+    // centriranje mreže u widgetu
     int offsetX = (width()  - gridWidth)  / 2;
     int offsetY = (height() - gridHeight) / 2;
 
+    // --- transformacija koordinata ---
+    p.save();
     p.translate(offsetX, offsetY);
 
-    // 1) mreža (crno)
+    // vertikalne linije (horizontalno po i)
     p.setPen(QPen(Qt::black, 1));
-
-    for (int j = 0; j <= n; ++j)
-        p.drawLine(j * s, 0, j * s, m * s);
-
     for (int i = 0; i <= m; ++i)
-        p.drawLine(0, i * s, n * s, i * s);
+        p.drawLine(i * s, 0, i * s, gridHeight);
 
-    // 2) free space (plavo)
+    // horizontalne linije (vertikalno po j), invertovane y
+    for (int j = 0; j <= n; ++j)
+        p.drawLine(0, gridHeight - j * s, gridWidth, gridHeight - j * s);
+
+    // --- free space (plavo) ---
     p.setPen(QPen(Qt::blue, 3));
-
     const auto& cells = fs_->getCells();
 
     for (int i = 0; i < m; ++i) {
         for (int j = 0; j < n; ++j) {
-
             const auto& c = cells[i][j];
-
             int x = i * s;
-            int y = (m - 1 - j) * s;
+            int y = gridHeight - (j + 1) * s; // bottom-left corner of cell
 
             if (!c.bottom.isEmpty())
                 drawHorizontalInterval(p, c.bottom.start, c.bottom.end, x, y + s, s);
-
             if (!c.top.isEmpty())
                 drawHorizontalInterval(p, c.top.start, c.top.end, x, y, s);
-
             if (!c.left.isEmpty())
                 drawVerticalInterval(p, c.left.start, c.left.end, x, y, s);
-
             if (!c.right.isEmpty())
                 drawVerticalInterval(p, c.right.start, c.right.end, x + s, y, s);
         }
     }
 
-    // 3) reachable intervali (zeleno)
+    // --- reachable intervals (zeleno) ---
     p.setPen(QPen(Qt::green, 4));
 
     for (int i = 0; i < m; ++i) {
         for (int j = 0; j < n; ++j) {
-
             const auto& c = cells[i][j];
-
             int x = i * s;
-            int y = (m - 1 - j) * s;
+            int y = gridHeight - (j + 1) * s;
 
-            // bottom
-            if (!c.reachableBottom.isEmpty()) {
-                drawHorizontalInterval(p,
-                                       c.reachableBottom.start,
-                                       c.reachableBottom.end,
-                                       x,
-                                       y + s,
-                                       s);
-            }
-
-            // top
-            if (!c.reachableTop.isEmpty()) {
-                drawHorizontalInterval(p,
-                                       c.reachableTop.start,
-                                       c.reachableTop.end,
-                                       x,
-                                       y,
-                                       s);
-            }
-
-            // left
-            if (!c.reachableLeft.isEmpty()) {
-                drawVerticalInterval(p,
-                                     c.reachableLeft.start,
-                                     c.reachableLeft.end,
-                                     x,
-                                     y,
-                                     s);
-            }
-
-            // right
-            if (!c.reachableRight.isEmpty()) {
-                drawVerticalInterval(p,
-                                     c.reachableRight.start,
-                                     c.reachableRight.end,
-                                     x + s,
-                                     y,
-                                     s);
-            }
+            if (!c.reachableBottom.isEmpty())
+                drawHorizontalInterval(p, c.reachableBottom.start, c.reachableBottom.end, x, y + s, s);
+            if (!c.reachableTop.isEmpty())
+                drawHorizontalInterval(p, c.reachableTop.start, c.reachableTop.end, x, y, s);
+            if (!c.reachableLeft.isEmpty())
+                drawVerticalInterval(p, c.reachableLeft.start, c.reachableLeft.end, x, y, s);
+            if (!c.reachableRight.isEmpty())
+                drawVerticalInterval(p, c.reachableRight.start, c.reachableRight.end, x + s, y, s);
         }
     }
+
+    p.restore();
 }

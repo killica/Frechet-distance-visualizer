@@ -1,4 +1,5 @@
 #include "freespace.h"
+#include "reachability.h"
 #include <cmath>
 #include <algorithm>
 
@@ -104,3 +105,15 @@ void FreeSpace::computeCells()
         }
     }
 }
+
+void FreeSpace::setEps(double e) {
+    eps = e;
+    computeCells(); // ponovo racuna intervale po eps
+}
+
+void FreeSpace::computeReachability() {
+    Frechet::Reachability reach(*this);
+    reach.compute();
+}
+
+

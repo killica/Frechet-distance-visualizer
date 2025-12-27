@@ -15,7 +15,7 @@ struct Interval {
 
     // Konstruktor sa start i end
     Interval(double s, double e) {
-        if (s >= e) {
+        if (s > e) {
             // Ako levi >= desnog, interval je prazan
             start = 0.0;
             end = 0.0;

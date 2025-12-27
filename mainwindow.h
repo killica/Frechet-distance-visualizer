@@ -4,6 +4,8 @@
 #include "canvas/polylinecanvas.h"
 #include "canvas/freespacecanvas.h"
 #include <QMainWindow>
+#include <QSlider>
+#include <QLabel>
 #include <memory>
 
 QT_BEGIN_NAMESPACE
@@ -27,6 +29,11 @@ private:
     PolylineCanvas* polylineCanvas;
     FreeSpaceCanvas* freeSpaceCanvas;
     std::unique_ptr<FreeSpace> freeSpace;
+    QSlider* epsSlider;
+    QLabel* epsLabel;
+
+private slots:
+    void onEpsChanged(int value);
 
 };
 #endif // MAINWINDOW_H

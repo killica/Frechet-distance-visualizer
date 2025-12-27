@@ -17,14 +17,18 @@ public:
         return cells;
     }
 
+    void computeCells();
+
+    void setEps(double e);
+    void computeReachability();
+
 private:
-    const Polyline& P;
-    const Polyline& Q;
+    Polyline P;
+    Polyline Q;
     double eps;
 
     std::vector<std::vector<FrechetCell>> cells;
 
-    void computeCells();
     Interval computeBottomInterval(const Point& p0, const Point& p1, const Point& q0);
     Interval computeTopInterval(const Point& p0, const Point& p1, const Point& q1);
     Interval computeLeftInterval(const Point& q0, const Point& q1, const Point& p0);
