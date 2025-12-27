@@ -170,10 +170,10 @@ void MainWindow::adjustEpsSliderRange() {
     if (!polylineCanvas) return;
 
     auto bb = polylineCanvas->getBoundingBox();
-    double maxRange = std::max(bb.maxX - bb.minX, bb.maxY - bb.minY);
+    double dx = bb.maxX - bb.minX;
+    double dy = bb.maxY - bb.minY;
+    double maxEps = std::sqrt(dx*dx + dy*dy);
     epsSlider->setMinimum(0);
-    epsSlider->setMaximum(static_cast<int>(std::ceil(maxRange)) + 1);
+    epsSlider->setMaximum(static_cast<int>(std::ceil(maxEps)));
     epsSlider->setValue(0);
 }
-
-
