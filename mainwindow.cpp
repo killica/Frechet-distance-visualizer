@@ -16,14 +16,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     auto* mainLayout = new QHBoxLayout(central);
 
-    // --- Levi canvas za polilinije ---
+    // --- Left canvas for polylines ---
     polylineCanvas = new PolylineCanvas(this);
     mainLayout->addWidget(polylineCanvas, 1);
 
-    // --- Desni layout za free space + slider ---
+    // --- Right layout for free space and slider ---
     auto* rightLayout = new QVBoxLayout();
     freeSpaceCanvas = new FreeSpaceCanvas(this);
-    rightLayout->addWidget(freeSpaceCanvas, 1); // rastegne se
+    rightLayout->addWidget(freeSpaceCanvas, 1);
 
     epsSlider = new QSlider(Qt::Horizontal);
     epsSlider->setMinimum(1);
@@ -36,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     mainLayout->addLayout(rightLayout, 1);
 
-    // --- Polilinije ---
+    // --- Polylines ---
     Polyline P;
     P.vertices = { QPointF(0,0), QPointF(40,0), QPointF(80,30), QPointF(120,60) };
     Polyline Q;
@@ -49,7 +49,7 @@ MainWindow::MainWindow(QWidget *parent)
     polylineCanvas->setPolylines(P, Q);
     freeSpaceCanvas->setFreeSpace(freeSpace.get());
 
-    // --- Signal i slot ---
+    // --- Signal and slot ---
     connect(epsSlider, &QSlider::valueChanged, this, &MainWindow::onEpsChanged);
 
     setWindowTitle("Frechet Distance Visualizer");
@@ -68,8 +68,23 @@ void MainWindow::onEpsChanged(int value)
 
     if (!freeSpace) return;
 
-    // Update eps i ponovo racunaj reachability
+    // Update eps + recalculate reachability
     freeSpace->setEps(value);
     freeSpace->computeReachability();
     freeSpaceCanvas->update();
+
+    if (!freeSpace->pathComputed && freeSpace->isTopRightReachable()) {
+        freeSpace->criticalPath = freeSpace->computeCriticalPath();
+        freeSpace->pathComputed = true;
+        freeSpace->criticalEps = value;
+    }
+
+    if (freeSpace->criticalPath.empty()) {
+        qDebug() << "Critical path is empty!";
+    } else {
+        qDebug() << "Critical path coordinates:";
+        for (const auto& pt : freeSpace->criticalPath) {
+            qDebug() << "(" << pt.x() << "," << pt.y() << ")";
+        }
+    }
 }

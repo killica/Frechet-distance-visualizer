@@ -65,31 +65,27 @@ void FreeSpaceCanvas::paintEvent(QPaintEvent*)
     if (!fs_)
         return;
 
-    int m = fs_->getM(); // broj segmenata P (horizontalno)
-    int n = fs_->getN(); // broj segmenata Q (vertikalno)
+    int m = fs_->getM();
+    int n = fs_->getN();
     int s = cellSize_;
 
     int gridWidth  = m * s;
     int gridHeight = n * s;
 
-    // centriranje mreže u widgetu
+    // center inside widget
     int offsetX = (width()  - gridWidth)  / 2;
     int offsetY = (height() - gridHeight) / 2;
 
-    // --- transformacija koordinata ---
     p.save();
     p.translate(offsetX, offsetY);
 
-    // vertikalne linije (horizontalno po i)
     p.setPen(QPen(Qt::black, 1));
     for (int i = 0; i <= m; ++i)
         p.drawLine(i * s, 0, i * s, gridHeight);
 
-    // horizontalne linije (vertikalno po j), invertovane y
     for (int j = 0; j <= n; ++j)
         p.drawLine(0, gridHeight - j * s, gridWidth, gridHeight - j * s);
 
-    // --- free space (plavo) ---
     p.setPen(QPen(Qt::blue, 3));
     const auto& cells = fs_->getCells();
 
@@ -110,7 +106,6 @@ void FreeSpaceCanvas::paintEvent(QPaintEvent*)
         }
     }
 
-    // --- reachable intervals (zeleno) ---
     p.setPen(QPen(Qt::green, 4));
 
     for (int i = 0; i < m; ++i) {
@@ -129,6 +124,23 @@ void FreeSpaceCanvas::paintEvent(QPaintEvent*)
                 drawVerticalInterval(p, c.reachableRight.start, c.reachableRight.end, x + s, y, s);
         }
     }
+
+    if (fs_->pathComputed && fs_->getEps() >= fs_->criticalEps) {
+        p.setPen(QPen(Qt::yellow, 2));
+
+        for (size_t k = 0; k + 1 < fs_->criticalPath.size(); ++k) {
+            const QPointF& p1 = fs_->criticalPath[k];
+            const QPointF& p2 = fs_->criticalPath[k+1];
+
+            int x1 = static_cast<int>(p1.x() * s);
+            int y1 = static_cast<int>(gridHeight - p1.y() * s);
+            int x2 = static_cast<int>(p2.x() * s);
+            int y2 = static_cast<int>(gridHeight - p2.y() * s);
+
+            p.drawLine(x1, y1, x2, y2);
+        }
+    }
+
 
     p.restore();
 }

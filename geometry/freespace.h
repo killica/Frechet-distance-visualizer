@@ -1,13 +1,15 @@
 #pragma once
 #include "FrechetCell.h"
-#include "Polyline.h" // pretpostavljamo da Polyline sadrži vector<Point>
+#include "Polyline.h"
 #include <vector>
+#include <QLineF>
 
 class FreeSpace {
 public:
     FreeSpace(const Polyline& P, const Polyline& Q, double epsilon);
     inline int getM() const {return cells.size();}
     inline int getN() const {return cells[0].size();}
+    inline double getEps() const {return eps;}
 
     const std::vector<std::vector<FrechetCell>>& getCells() const {
         return cells;
@@ -22,6 +24,13 @@ public:
     void setEps(double e);
     void computeReachability();
 
+    std::vector<QPointF> criticalPath;
+    bool pathComputed = false;
+    int criticalEps = -1;
+
+
+    bool isTopRightReachable() const;
+    std::vector<QPointF> computeCriticalPath();
 private:
     Polyline P;
     Polyline Q;
