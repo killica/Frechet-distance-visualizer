@@ -145,8 +145,6 @@ QPointF PolylineCanvas::transformPoint(const Point& pt) const
     return QPointF(x, y);
 }
 
-
-
 void PolylineCanvas::paintEvent(QPaintEvent*)
 {
     QPainter painter(this);
@@ -200,8 +198,10 @@ void PolylineCanvas::paintEvent(QPaintEvent*)
     }
 
     // leash drawing -> a bit translated so it fits the hand of a man and a collar of a dog
-    painter.setPen(QPen(Qt::darkGray, 2, Qt::SolidLine, Qt::RoundCap));
-    painter.drawLine(QPointF(currentDogPos.x() + 2, currentDogPos.y()), QPointF(currentHumanPos.x() + 11, currentHumanPos.y()));
+    if (currentDogPos != transformPoint(P.vertices[0]) || currentHumanPos != transformPoint(Q.vertices[0])) {
+        painter.setPen(QPen(Qt::darkGray, 2, Qt::SolidLine, Qt::RoundCap));
+        painter.drawLine(QPointF(currentDogPos.x() + 2, currentDogPos.y()), QPointF(currentHumanPos.x() + 11, currentHumanPos.y()));
+    }
 
     if (!dogPixmapScaled.isNull())
         painter.drawPixmap(currentDogPos.x() - dogPixmapScaled.width()/2,
