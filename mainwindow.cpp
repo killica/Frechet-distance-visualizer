@@ -35,11 +35,20 @@ MainWindow::MainWindow(QWidget *parent)
 
     restartAnimButton = new QPushButton("Restart animation");
     restartAnimButton->setEnabled(false);
-    connect(restartAnimButton, &QPushButton::clicked, polylineCanvas, &PolylineCanvas::restartAnimation);
+    connect(restartAnimButton, &QPushButton::clicked,
+            polylineCanvas, &PolylineCanvas::restartAnimation);
+
+    loadPolylinesButton = new QPushButton("Load polylines");
+    connect(loadPolylinesButton, &QPushButton::clicked,
+            polylineCanvas, &PolylineCanvas::loadPolylines);
+
+    auto* buttonsLayout = new QHBoxLayout();
+    buttonsLayout->addWidget(loadPolylinesButton);
+    buttonsLayout->addWidget(restartAnimButton);
 
     leftLayout->addWidget(polylineTitle);
     leftLayout->addWidget(polylineCanvas, 1);
-    leftLayout->addWidget(restartAnimButton, 1);
+    leftLayout->addLayout(buttonsLayout, 0);
 
     mainLayout->addLayout(leftLayout, 1);
 
@@ -56,58 +65,45 @@ MainWindow::MainWindow(QWidget *parent)
     rightLayout->addWidget(freeSpaceCanvas, 1);
 
     epsSlider = new QSlider(Qt::Horizontal);
-    epsSlider->setMinimum(1);
+    epsSlider->setMinimum(0);
     epsSlider->setMaximum(100);
-    epsSlider->setValue(1);
+    epsSlider->setValue(0);
 
-    epsLabel = new QLabel(QString("Eps = %1").arg(epsSlider->value()));
+    epsLabel = new QLabel(QString("ε = %1").arg(epsSlider->value()));
     epsLabel->setAlignment(Qt::AlignLeft);
 
-    criticalEpsLabel = new QLabel(QString("Critical eps = ?"));
+    criticalEpsLabel = new QLabel(QString("Critical ε = ?"));
     criticalEpsLabel->setAlignment(Qt::AlignRight);
 
     auto* epsLayout = new QHBoxLayout();
     epsLayout->addWidget(epsLabel);
     epsLayout->addWidget(criticalEpsLabel);
 
-
     rightLayout->addLayout(epsLayout);
     rightLayout->addWidget(epsSlider);
 
     mainLayout->addLayout(rightLayout, 1);
 
-    // Polylines
-    Polyline P;
-    P.vertices = {
-        QPointF(0, 0),
-        QPointF(40, 0),
-        QPointF(80, 30),
-        QPointF(120, 60)
-    };
-
-    Polyline Q;
-    Q.vertices = {
-        QPointF(0, 50),
-        QPointF(30, 80),
-        QPointF(70, 20),
-        QPointF(110, 50)
-    };
-
-    freeSpace = std::make_unique<FreeSpace>(P, Q, epsSlider->value());
-
-    Frechet::Reachability reach(*freeSpace);
-    reach.compute();
-
+    // --- Polylines start empty ---
+    Polyline P, Q; // prazni
     polylineCanvas->setPolylines(P, Q);
-    freeSpaceCanvas->setFreeSpace(freeSpace.get());
 
-    // Signals & slots
+    // freeSpace se ne kreira dok korisnik ne učita fajl
+    freeSpace.reset();
+
+    freeSpaceCanvas->setFreeSpace(nullptr);
+
+    // --- Signals & slots ---
     connect(epsSlider, &QSlider::valueChanged,
             this, &MainWindow::onEpsChanged);
 
+    connect(polylineCanvas, &PolylineCanvas::polylinesLoaded,
+            this, &MainWindow::onPolylinesLoaded);
+
     setWindowTitle("Frechet Distance Visualizer");
-    resize(1100, 600);
+    resize(1100, 650);
 }
+
 
 MainWindow::~MainWindow()
 {
@@ -117,7 +113,7 @@ MainWindow::~MainWindow()
 // Slot
 void MainWindow::onEpsChanged(int value)
 {
-    epsLabel->setText(QString("Eps = %1").arg(value));
+    epsLabel->setText(QString("ε = %1").arg(value));
 
     if (!freeSpace)
         return;
@@ -135,9 +131,9 @@ void MainWindow::onEpsChanged(int value)
         polylineCanvas->generateAnimationPositions(freeSpace->criticalPath);
         polylineCanvas->startAnimation();
         restartAnimButton->setEnabled(true);
-        criticalEpsLabel->setText(QString("Critical eps ≈ %1").arg(value));
+        criticalEpsLabel->setText(QString("Critical ε ≈ %1").arg(value));
         criticalEpsLabel->setStyleSheet(
-            "color: red;"
+            "color: darkgreen;"
             "font-size: 17px;"
             "font-weight: bold;"
             );
@@ -152,3 +148,21 @@ void MainWindow::onEpsChanged(int value)
         }
     }
 }
+
+void MainWindow::onPolylinesLoaded(const Polyline& P, const Polyline& Q)
+{
+    polylineCanvas->setPolylines(P, Q);
+
+    freeSpace.reset();
+
+    if (!P.vertices.empty() && !Q.vertices.empty()) {
+        freeSpace = std::make_unique<FreeSpace>(P, Q, epsSlider->value());
+        freeSpaceCanvas->setFreeSpace(freeSpace.get());
+    }
+
+    criticalEpsLabel->setText("Critical ε = ?");
+    criticalEpsLabel->setStyleSheet("");
+    epsSlider->setValue(0);
+    restartAnimButton->setEnabled(false);
+}
+

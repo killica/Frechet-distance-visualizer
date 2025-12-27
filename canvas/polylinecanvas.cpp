@@ -2,6 +2,8 @@
 #include "freespacecanvas.h"
 #include <QPainter>
 #include <QTimer>
+#include <QFileDialog>
+#include <QRegularExpression>
 
 PolylineCanvas::PolylineCanvas(QWidget *parent)
     : QWidget{parent}
@@ -233,8 +235,76 @@ PolylineCanvas::BoundingBox PolylineCanvas::computeBoundingBox() const
 
 void PolylineCanvas::restartAnimation()
 {
-    // if (criticalPath.empty()) return;
-
     animIndex = 0;
     animTimer->start();
 }
+
+void PolylineCanvas::loadPolylines()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, "Open polyline file", "", "Text files (*.txt)");
+
+    if (fileName.isEmpty())
+        return;
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Cannot open file:" << fileName;
+        return;
+    }
+
+    QTextStream in(&file);
+
+    Polyline newP, newQ;
+    Polyline* current = nullptr;
+
+    while (!in.atEnd()) {
+        QString line = in.readLine().trimmed();
+
+        if (line.isEmpty())
+            continue;
+
+        if (line == "P") {
+            current = &newP;
+            continue;
+        }
+
+        if (line == "Q") {
+            current = &newQ;
+            continue;
+        }
+
+        if (!current) {
+            qWarning() << "Point without polyline header:" << line;
+            continue;
+        }
+
+        QStringList parts = line.split(QRegularExpression("\\s+"));
+        if (parts.size() != 2) {
+            qWarning() << "Invalid line:" << line;
+            continue;
+        }
+
+        bool okX, okY;
+        double x = parts[0].toDouble(&okX);
+        double y = parts[1].toDouble(&okY);
+
+        if (!okX || !okY) {
+            qWarning() << "Invalid coordinates:" << line;
+            continue;
+        }
+
+        current->vertices.emplace_back(x, y);
+    }
+
+    if (newP.vertices.size() < 2 || newQ.vertices.size() < 2) {
+        qWarning() << "Each polyline must have at least 2 points";
+        return;
+    }
+
+    setPolylines(newP, newQ);
+
+    file.close();
+
+    emit polylinesLoaded(P, Q);
+}
+

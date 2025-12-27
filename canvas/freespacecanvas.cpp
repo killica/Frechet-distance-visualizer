@@ -14,7 +14,7 @@ void FreeSpaceCanvas::updateCellSize()
 
     int m = fs_->getM();
     int n = fs_->getN();
-    int margin = 20;
+    int margin = 50;
 
     if (m > 0 && n > 0)
         cellSize_ = std::min(
@@ -176,5 +176,3 @@ void FreeSpaceCanvas::paintEvent(QPaintEvent*)
 
     p.restore();
 }
-
-

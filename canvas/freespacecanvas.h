@@ -19,4 +19,5 @@ protected:
 
 private:
     int cellSize_ = 50;
+
 };

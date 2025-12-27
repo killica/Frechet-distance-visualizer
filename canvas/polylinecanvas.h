@@ -51,8 +51,11 @@ private:
 
 public slots:
     void restartAnimation();
+    void loadPolylines();
 
 signals:
+    void polylinesLoaded(const Polyline& P, const Polyline& Q);
+
 };
 
 #endif // POLYLINECANVAS_H

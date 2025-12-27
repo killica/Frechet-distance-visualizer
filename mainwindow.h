@@ -34,9 +34,11 @@ private:
     QLabel* epsLabel;
     QLabel* criticalEpsLabel;
     QPushButton* restartAnimButton;
+    QPushButton* loadPolylinesButton;
 
 private slots:
     void onEpsChanged(int value);
+    void onPolylinesLoaded(const Polyline& P, const Polyline& Q);
 
 };
 #endif // MAINWINDOW_H
