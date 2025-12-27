@@ -12,6 +12,7 @@ public:
     void setPolylines(const Polyline& p, const Polyline& q);
     void updateTransform();
 
+    QPointF transformPoint(const Point &pt) const;
 protected:
     void paintEvent(QPaintEvent *) override;
 
@@ -28,7 +29,7 @@ private:
         double minY, maxY;
     };
 
-    BoundingBox computeBoundingBox();
+    BoundingBox computeBoundingBox() const;
 
 signals:
 };

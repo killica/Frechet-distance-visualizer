@@ -28,37 +28,56 @@ void PolylineCanvas::updateTransform()
     double scaleY = h / (bb.maxY - bb.minY);
     scale_ = std::min(scaleX, scaleY);
 
-    // Centriranje: pomeramo tako da bbox bude u sredini widgeta
     offsetX_ = margin + (w - (bb.maxX - bb.minX)*scale_) / 2.0 - bb.minX*scale_;
     offsetY_ = margin + (h - (bb.maxY - bb.minY)*scale_) / 2.0 + bb.minY*scale_;
 }
 
-
-void PolylineCanvas::paintEvent(QPaintEvent*) {
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing);
-
-    painter.fillRect(rect(), Qt::white);
-
-    painter.save();
-
-    painter.translate(offsetX_, height() - offsetY_);
-    painter.scale(scale_, -scale_);
-
-    // crtanje P i Q
-    painter.setPen(QPen(Qt::blue, 2));
-    for (int i = 0; i + 1 < P.size(); ++i)
-        painter.drawLine(P.vertices[i], P.vertices[i + 1]);
-
-    painter.setPen(QPen(Qt::red, 2));
-    for (int i = 0; i + 1 < Q.size(); ++i)
-        painter.drawLine(Q.vertices[i], Q.vertices[i + 1]);
-
-    painter.restore();
-
+QPointF PolylineCanvas::transformPoint(const Point& pt) const {
+    double x = offsetX_ + pt.x() * scale_;
+    double y = offsetY_ + (computeBoundingBox().maxY - pt.y()) * scale_;
+    return QPointF(x, y);
 }
 
-PolylineCanvas::BoundingBox PolylineCanvas::computeBoundingBox()
+
+void PolylineCanvas::paintEvent(QPaintEvent*)
+{
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.fillRect(rect(), Qt::white);
+
+    if (P.vertices.empty() || Q.vertices.empty())
+        return;
+
+    painter.setPen(QPen(Qt::blue, 2));
+    for (int i = 0; i + 1 < P.vertices.size(); ++i)
+        painter.drawLine(transformPoint(P.vertices[i]),
+                         transformPoint(P.vertices[i + 1]));
+
+    painter.setPen(QPen(Qt::red, 2));
+    for (int i = 0; i + 1 < Q.vertices.size(); ++i)
+        painter.drawLine(transformPoint(Q.vertices[i]),
+                         transformPoint(Q.vertices[i + 1]));
+
+    // labeling points
+    painter.setPen(QPen(Qt::blue, 2));
+    QFont font = painter.font();
+    font.setPointSizeF(12);
+    painter.setFont(font);
+
+    for (size_t i = 0; i < P.vertices.size(); ++i) {
+        QPointF pt = transformPoint(P.vertices[i]);
+        painter.drawText(pt + QPointF(5, -5), QString("P%1").arg(i));
+    }
+
+    painter.setPen(QPen(Qt::red, 2));
+    for (size_t i = 0; i < Q.vertices.size(); ++i) {
+        QPointF pt = transformPoint(Q.vertices[i]);
+        painter.drawText(pt + QPointF(5, -5), QString("Q%1").arg(i));
+    }
+}
+
+
+PolylineCanvas::BoundingBox PolylineCanvas::computeBoundingBox() const
 {
     BoundingBox bb;
     bb.minX = bb.minY = 1e20;
