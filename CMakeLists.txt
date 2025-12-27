@@ -30,6 +30,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         geometry/reachability.h geometry/reachability.cpp
         canvas/polylinecanvas.h canvas/polylinecanvas.cpp
         canvas/freespacecanvas.h canvas/freespacecanvas.cpp
+        resources/images.qrc
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET FrechetVisualizer APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

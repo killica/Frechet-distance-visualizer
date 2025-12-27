@@ -117,6 +117,10 @@ void MainWindow::onEpsChanged(int value)
         freeSpace->criticalPath = freeSpace->computeCriticalPath();
         freeSpace->pathComputed = true;
         freeSpace->criticalEps = value;
+
+        polylineCanvas->generateAnimationPositions(freeSpace->criticalPath);
+        polylineCanvas->startAnimation();
+
     }
 
     if (freeSpace->criticalPath.empty()) {

@@ -13,6 +13,11 @@ public:
     void updateTransform();
 
     QPointF transformPoint(const Point &pt) const;
+    void startAnimation();
+    void updateAnimation();
+    void generateAnimationPositions(const std::vector<QPointF>& criticalPath);
+
+    Point pointOnPolyline(const Polyline &poly, double param);
 protected:
     void paintEvent(QPaintEvent *) override;
 
@@ -29,7 +34,21 @@ private:
         double minY, maxY;
     };
 
+    BoundingBox bbox_;
     BoundingBox computeBoundingBox() const;
+
+    // Animation info
+    QPixmap dogPixmap, dogPixmapScaled;
+    QPixmap humanPixmap, humanPixmapScaled;
+    QPointF currentDogPos;
+    QPointF currentHumanPos;
+
+    QVector<QPointF> dogPositions;
+    QVector<QPointF> humanPositions;
+    int animIndex = 0;
+    bool animationRunning = false;
+    QTimer* animTimer = nullptr;
+
 
 signals:
 };
