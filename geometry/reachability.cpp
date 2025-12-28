@@ -24,7 +24,7 @@ void Reachability::compute() {
 
     // calculate for the rest of the bottom row
     for (int i = 1; i < m; ++i) {
-        if (cells[i-1][0].reachableBottom.contains(1.0))
+        if (cells[i-1][0].reachableBottom.contains(1.0) && cells[i][0].bottom.contains(0.0))
             cells[i][0].reachableBottom = cells[i][0].bottom;
         else
             cells[i][0].reachableBottom = Interval();
@@ -32,7 +32,7 @@ void Reachability::compute() {
 
     // calculate for the rest of the left column
     for (int j = 1; j < n; ++j) {
-        if (cells[0][j-1].reachableLeft.contains(1.0))
+        if (cells[0][j-1].reachableLeft.contains(1.0) && cells[0][j].left.contains(0.0))
             cells[0][j].reachableLeft = cells[0][j].left;
         else
             cells[0][j].reachableLeft = Interval();
