@@ -1,6 +1,7 @@
 #include "polylinecanvas.h"
 #include "freespacecanvas.h"
 #include <QPainter>
+#include <QPainterPath>
 #include <QTimer>
 #include <QFileDialog>
 #include <QRegularExpression>
@@ -78,6 +79,7 @@ void PolylineCanvas::generateAnimationPositions(const std::vector<QPointF>& crit
 
             dogPositions.push_back(transformPoint(dogPos));
             humanPositions.push_back(transformPoint(humanPos));
+            leashLengths.push_back(std::hypot(dogPos.x() - humanPos.x(), dogPos.y() - humanPos.y()));
         }
     }
 }
@@ -90,6 +92,7 @@ void PolylineCanvas::startAnimation()
     animIndex = 0;
     currentDogPos = dogPositions[0];
     currentHumanPos = humanPositions[0];
+    currentLeashLength = leashLengths[0];
     animTimer->start();
 }
 
@@ -98,6 +101,7 @@ void PolylineCanvas::updateAnimation()
     if (animIndex < static_cast<int>(dogPositions.size())) {
         currentDogPos = dogPositions[animIndex];
         currentHumanPos = humanPositions[animIndex];
+        currentLeashLength = leashLengths[animIndex];
         ++animIndex;
         update();
     } else {
@@ -151,18 +155,25 @@ void PolylineCanvas::paintEvent(QPaintEvent*)
 {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
-    painter.fillRect(rect(), Qt::white);
+
+    QPainterPath bg;
+    bg.addRoundedRect(rect().adjusted(2, 2, -2, -2), 12, 12);
+
+    painter.fillPath(bg, QColor("#FAFAFA"));
+    painter.setPen(QPen(QColor("#E5E7EB"), 1));
+    painter.drawPath(bg);
+
 
     if (P.vertices.empty() || Q.vertices.empty())
         return;
 
     // --- crtanje linija ---
-    painter.setPen(QPen(Qt::blue, 2));
+    painter.setPen(QPen(QColor("#2563EB"), 2));
     for (int i = 0; i + 1 < P.vertices.size(); ++i)
         painter.drawLine(transformPoint(P.vertices[i]),
                          transformPoint(P.vertices[i + 1]));
 
-    painter.setPen(QPen(Qt::red, 2));
+    painter.setPen(QPen(QColor("#DC2626"), 2));
     for (int i = 0; i + 1 < Q.vertices.size(); ++i)
         painter.drawLine(transformPoint(Q.vertices[i]),
                          transformPoint(Q.vertices[i + 1]));
@@ -171,16 +182,16 @@ void PolylineCanvas::paintEvent(QPaintEvent*)
     font.setPointSizeF(12);
     painter.setFont(font);
 
-    painter.setPen(Qt::blue);
-    painter.setBrush(Qt::blue);
+    painter.setPen(QColor("#2563EB"));
+    painter.setBrush(QColor("#2563EB"));
     for (size_t i = 0; i < P.vertices.size(); ++i) {
         QPointF pt = transformPoint(P.vertices[i]);
         painter.drawText(pt + QPointF(5, -5), QString("P%1").arg(FreeSpaceCanvas::subscriptNumber(i)));
         painter.drawEllipse(pt, MARKER_RADIUS, MARKER_RADIUS);
     }
 
-    painter.setPen(Qt::red);
-    painter.setBrush(Qt::red);
+    painter.setPen(QColor("#DC2626"));
+    painter.setBrush(QColor("#DC2626"));
     for (size_t i = 0; i < Q.vertices.size(); ++i) {
         QPointF pt = transformPoint(Q.vertices[i]);
         painter.drawText(pt + QPointF(5, -5), QString("Q%1").arg(FreeSpaceCanvas::subscriptNumber(i)));
@@ -205,8 +216,12 @@ void PolylineCanvas::paintEvent(QPaintEvent*)
 
     // leash drawing -> a bit translated so it fits the hand of a man and a collar of a dog
     if (currentDogPos != transformPoint(P.vertices[0]) || currentHumanPos != transformPoint(Q.vertices[0])) {
-        painter.setPen(QPen(Qt::darkGray, 2, Qt::SolidLine, Qt::RoundCap));
+        QPen leashPen(QColor(255, 170, 0));
+        leashPen.setWidth(2);
+        painter.setPen(leashPen);
         painter.drawLine(QPointF(currentDogPos.x() + 2, currentDogPos.y()), QPointF(currentHumanPos.x() + 11, currentHumanPos.y()));
+
+        drawLeashLength(painter);
     }
 
     if (!dogPixmapScaled.isNull())
@@ -218,6 +233,36 @@ void PolylineCanvas::paintEvent(QPaintEvent*)
         painter.drawPixmap(currentHumanPos.x() - humanPixmapScaled.width()/2,
                            currentHumanPos.y() - humanPixmapScaled.height()/2,
                            humanPixmapScaled);
+}
+
+void PolylineCanvas::drawLeashLength(QPainter &painter)
+{
+    QPointF mid = 0.5 * (currentDogPos + currentHumanPos);
+    int displayLength = static_cast<int>(std::round(currentLeashLength));
+
+    QString text = QString::number(displayLength);
+
+    // font
+    QFont f = painter.font();
+    f.setPointSizeF(10);
+    f.setBold(true);
+    painter.setFont(f);
+
+    // bounding box teksta
+    QFontMetrics fm(f);
+    QRect textRect = fm.boundingRect(text);
+    textRect.moveCenter(mid.toPoint());
+
+    // background
+    QColor bg(255, 255, 255, 180); // poluprovidno belo
+    painter.setBrush(bg);
+    painter.setPen(Qt::NoPen);
+    painter.drawRoundedRect(textRect.adjusted(-4, -2, 4, 2), 4, 4);
+
+    // tekst
+    painter.setPen(Qt::black);
+    painter.drawText(textRect, Qt::AlignCenter, text);
+
 }
 
 PolylineCanvas::BoundingBox PolylineCanvas::computeBoundingBox() const
@@ -253,12 +298,15 @@ void PolylineCanvas::resetAnimation()
 
     dogPositions.clear();
     humanPositions.clear();
+    leashLengths.clear();
     animIndex = 0;
 
     if (!P.vertices.empty())
         currentDogPos = transformPoint(P.vertices[0]);
     if (!Q.vertices.empty())
         currentHumanPos = transformPoint(Q.vertices[0]);
+
+    currentLeashLength = 0.0;
 
     update();
 }

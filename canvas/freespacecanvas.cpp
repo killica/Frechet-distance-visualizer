@@ -97,7 +97,7 @@ void FreeSpaceCanvas::paintEvent(QPaintEvent*)
     for (int j = 0; j <= n; ++j)
         p.drawLine(0, gridHeight - j * s, gridWidth, gridHeight - j * s);
 
-    p.setPen(QPen(Qt::blue, 3));
+    p.setPen(QPen(QColor("#0096FF"), 3));
     const auto& cells = fs_->getCells();
 
     for (int i = 0; i < m; ++i) {
@@ -117,7 +117,7 @@ void FreeSpaceCanvas::paintEvent(QPaintEvent*)
         }
     }
 
-    p.setPen(QPen(Qt::green, 4));
+    p.setPen(QPen(QColor("#10B981"), 4));
 
     for (int i = 0; i < m; ++i) {
         for (int j = 0; j < n; ++j) {

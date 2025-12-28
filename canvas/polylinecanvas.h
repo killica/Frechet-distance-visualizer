@@ -38,20 +38,24 @@ private:
     double offsetX_ = 0.0;
     double offsetY_ = 0.0;
 
-    BoundingBox bbox_;
-    BoundingBox computeBoundingBox() const;
+    BoundingBox bbox_; 
 
     // Animation info
     QPixmap dogPixmap, dogPixmapScaled;
     QPixmap humanPixmap, humanPixmapScaled;
     QPointF currentDogPos;
     QPointF currentHumanPos;
+    double currentLeashLength;
 
     QVector<QPointF> dogPositions;
     QVector<QPointF> humanPositions;
+    QVector<double> leashLengths;
     int animIndex = 0;
     bool animationRunning = false;
     QTimer* animTimer = nullptr;
+
+    BoundingBox computeBoundingBox() const;
+    void drawLeashLength(QPainter &painter);
 
 public slots:
     void restartAnimation();

@@ -133,7 +133,7 @@ void MainWindow::onEpsChanged(int value)
         restartAnimButton->setEnabled(true);
         criticalEpsLabel->setText(QString("Critical ε ≈ %1").arg(value));
         criticalEpsLabel->setStyleSheet(
-            "color: darkgreen;"
+            "color: #00A36C;"
             "font-size: 17px;"
             "font-weight: bold;"
             );
