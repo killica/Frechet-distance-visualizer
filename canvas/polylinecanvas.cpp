@@ -145,6 +145,8 @@ QPointF PolylineCanvas::transformPoint(const Point& pt) const
     return QPointF(x, y);
 }
 
+constexpr double MARKER_RADIUS = 3.0;
+
 void PolylineCanvas::paintEvent(QPaintEvent*)
 {
     QPainter painter(this);
@@ -170,15 +172,19 @@ void PolylineCanvas::paintEvent(QPaintEvent*)
     painter.setFont(font);
 
     painter.setPen(Qt::blue);
+    painter.setBrush(Qt::blue);
     for (size_t i = 0; i < P.vertices.size(); ++i) {
         QPointF pt = transformPoint(P.vertices[i]);
         painter.drawText(pt + QPointF(5, -5), QString("P%1").arg(FreeSpaceCanvas::subscriptNumber(i)));
+        painter.drawEllipse(pt, MARKER_RADIUS, MARKER_RADIUS);
     }
 
     painter.setPen(Qt::red);
+    painter.setBrush(Qt::red);
     for (size_t i = 0; i < Q.vertices.size(); ++i) {
         QPointF pt = transformPoint(Q.vertices[i]);
         painter.drawText(pt + QPointF(5, -5), QString("Q%1").arg(FreeSpaceCanvas::subscriptNumber(i)));
+        painter.drawEllipse(pt, MARKER_RADIUS, MARKER_RADIUS);
     }
 
     if (!dogPixmap.isNull() && dogPixmapScaled.isNull()) {
