@@ -26,6 +26,7 @@ public:
 
 
     Point pointOnPolyline(const Polyline &poly, double param);
+    void resetAnimation();
 protected:
     void paintEvent(QPaintEvent *) override;
 

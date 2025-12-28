@@ -239,6 +239,24 @@ void PolylineCanvas::restartAnimation()
     animTimer->start();
 }
 
+void PolylineCanvas::resetAnimation()
+{
+    if (animTimer->isActive()) {
+        animTimer->stop();
+    }
+
+    dogPositions.clear();
+    humanPositions.clear();
+    animIndex = 0;
+
+    if (!P.vertices.empty())
+        currentDogPos = transformPoint(P.vertices[0]);
+    if (!Q.vertices.empty())
+        currentHumanPos = transformPoint(Q.vertices[0]);
+
+    update();
+}
+
 void PolylineCanvas::loadPolylines()
 {
     QString fileName = QFileDialog::getOpenFileName(this, "Open polyline file", "", "Text files (*.txt)");

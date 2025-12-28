@@ -151,6 +151,7 @@ void MainWindow::onEpsChanged(int value)
 
 void MainWindow::onPolylinesLoaded(const Polyline& P, const Polyline& Q)
 {
+    polylineCanvas->resetAnimation();
     polylineCanvas->setPolylines(P, Q);
     adjustEpsSliderRange();
 
